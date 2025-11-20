@@ -990,7 +990,9 @@ and prompt di-$\\tau_\mathrm{h}$ paths to that of the combination of the previou
     else:
         table.add_image("data_Sara/efficiency_met_ditau_perEvt_GENpT30_Tau32_M100ctau100_officialsummer22EE.pdf")
     
-    reader = RootFileReader("data_Sara/Figs_gen_met.root")
+    reader = RootFileReader("data_Sara/Figs13_gen_met.root")
+    if var == 'd0':
+        reader = RootFileReader("data_Sara/Figs13_tau_gen_dxy.root")
     g_ditau = reader.read_teff("eff_ditau;1")
     g_ptmiss = reader.read_teff("eff_ptmiss;1")
     g_prompt = reader.read_teff("eff_prompttau;1")
@@ -1038,6 +1040,95 @@ its pseudorapidity ($|\\eta(\\tau)| <$ 2.1), and its decay vertex radial positio
     return table
 
 
+def makeDiTauRateTable(year):
+    
+    table = Table(f"Displaced tau trigger rate vs pileup in {year}")
+    table.location = f"Data from Fig. 14 (left)"
+    if year == '2023':
+        table.location = f"Data from Fig. 14 (right)"
+        table.add_image("data_Sara/rate_vs_pileup_2023D_ditau.pdf")
+    else:    
+        table.add_image("data_Sara/rate_vs_pileup_2022EFG_ditau.pdf")
+    table.description = "Total rate of the displaced $\\tau_\mathrm{h}$ trigger for a few representative runs in 2022 (left) and 2023 (right) data, as a function of PU."
+    with open(f"data_Sara/hepdata_ditau_rate_{year}.yaml") as f:
+        data = yaml.safe_load(f)
+    pu_vals = [v["value"] for v in data["independent_variables"][0]["values"]]
+    pileup = Variable("Pileup", is_independent=True, is_binned=False, units="")
+    pileup.values = pu_vals
+
+    rate_vals = [v["value"] for v in data["dependent_variables"][0]["values"]]
+    rate = Variable("rate", is_independent=False, is_binned=False, units="Hz")
+    rate.values = rate_vals
+
+    table.add_variable(pileup)
+    table.add_variable(rate)
+
+    return table
+
+def makeDiphotonRateTable():
+    
+    table = Table(f"Delayed-diphoton trigger rate vs pileup in 2024")
+    table.add_image("data_Sara/rate_vs_pileup_new_perFill_lastFour_2024C_diphoton_ps1p8E34.pdf")
+    table.location = f"Data from Fig. 32 (right)"
+    table.description = "The delayed-diphoton trigger rate is shown as a function of PU for selected fills in 2024 data, \
+at an instantaneous luminosity of approximately $1.8\\times10^{34}~cm^{-2}~s^{-1}$. \
+The trigger rate displays a linear dependency on PU."
+    with open(f"data_Sara/hepdata_diphoton_rate_2024.yaml") as f:
+        data = yaml.safe_load(f)
+    pu_vals = [v["value"] for v in data["independent_variables"][0]["values"]]
+    pileup = Variable("Pileup", is_independent=True, is_binned=False, units="")
+    pileup.values = pu_vals
+
+    rate_vals = [v["value"] for v in data["dependent_variables"][0]["values"]]
+    rate = Variable("rate", is_independent=False, is_binned=False, units="Hz")
+    rate.values = rate_vals
+
+    fill_vals = [v["value"] for v in data["dependent_variables"][1]["values"]]
+    fill = Variable("Fill", is_independent=False, is_binned=False, units="")
+    fill.values = fill_vals
+
+    table.add_variable(pileup)
+    table.add_variable(rate)
+    table.add_variable(fill)
+
+    return table
+
+
+def makeDisplPhotonRateTable(year):
+    
+    table = Table(f"Displaced photon plus HT trigger rate vs pileup in {year}")
+    if year == '2023':
+        table.add_image("data_Sara/rate_vs_pileup_new_2023BCD_displphoton_ps2p0E34.pdf")
+    elif year == '2022':
+        table.add_image("data_Sara/rate_vs_pileup_new_2022BCDEFG_displphoton_ps1p8E34.pdf")
+
+    position = 'left'    
+    if year == '2023':
+        position = 'right'    
+    table.location = f"Data from Fig. 37 ({position})"
+
+    table.description = "Total rate of the displaced-photon + $H_\mathrm{T}$ HLT path for a few representative \
+runs in 2022 data (left), at an instantaneous luminosity of approximately \
+$1.8\\times10^{34}~cm^{-2}~s^{-1}$, and 2023 data (right), at an instantaneous luminosity \
+of approximately $2.0\\times10^{34}~cm^{-2}~s^{-1}$, as a function of PU. \
+The rate vs PU behavior was nonlinear in 2022 and fixed in time for 2023 data taking."
+
+    with open(f"data_Sara/hepdata_displphoton_rate_{year}.yaml") as f:
+        data = yaml.safe_load(f)
+    pu_vals = [v["value"] for v in data["independent_variables"][0]["values"]]
+    pileup = Variable("Pileup", is_independent=True, is_binned=False, units="")
+    pileup.values = pu_vals
+
+    rate_vals = [v["value"] for v in data["dependent_variables"][0]["values"]]
+    rate = Variable("rate", is_independent=False, is_binned=False, units="Hz")
+    rate.values = rate_vals
+
+    table.add_variable(pileup)
+    table.add_variable(rate)
+
+    return table
+
+
 def main():
     # Check if ImageMagick is available for image processing
     has_imagemagick = check_imagemagick_available()
@@ -1067,6 +1158,10 @@ def main():
     # Figure 13
     submission.add_table(makeDisplacedTauEffTable('MET'))
     submission.add_table(makeDisplacedTauEffTable('d0'))
+    
+    # Figure 14
+    submission.add_table(makeDiTauRateTable('2022'))
+    submission.add_table(makeDiTauRateTable('2023'))
 
     # Figure 21
     submission.add_table(makeHcalTowerEffTable())
@@ -1087,6 +1182,7 @@ def main():
 
     # Figure 32
     submission.add_table(makeDelayedDiPhotonDataRateTable())
+    submission.add_table(makeDiphotonRateTable())
 
     # Figure 33
     submission.add_table(makeDelayedDiPhotonDataEffTable("seed time ($\mathrm{e_{2}}$)"))
@@ -1094,6 +1190,10 @@ def main():
     # Figure 34
     submission.add_table(makeDelayedDiPhotonDataEffTable("$p_{T}$ ($\mathrm{e_{2}}$)"))
     submission.add_table(makeDelayedDiPhotonDataEffTable("$\eta$ ($\mathrm{e_{2}}$)"))
+
+    # Figure 37
+    submission.add_table(makeDisplPhotonRateTable('2022'))
+    submission.add_table(makeDisplPhotonRateTable('2023'))
 
     #Figure 39
     submission.add_table(makeDisplacedMuonL1EffTable("BMTF"))

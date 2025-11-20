@@ -963,6 +963,80 @@ def makeHLTMuResoTable(xvar):
 
     return table
 
+def makeDisplacedTauEffTable(var):
+
+    var_label = '$\mathrm{p_{T}^{miss}}$'
+    position = 'right'
+    if var == 'd0':
+        var_label = '$d_{0}$'
+        position = 'left'
+    
+    table = Table(f"Displaced tau trigger efficiency vs {var_label}")
+    table.description = "The L1T+HLT efficiency of the displaced $\\tau_\mathrm{h}$ trigger, for simulated $\mathrm{p}\mathrm{p} \\to \\tilde{\\tau}\\tilde{\\tau},(\\tilde{\\tau} \\to \\tau\\tilde{\\chi}^{0}_{1})$ events, \
+where the $\\tilde{\\tau}$ has $c\\tau = 10$ cm and each $\\tau$ decays hadronically. The efficiency is shown for the displaced di-$\\tau_\mathrm{h}$ trigger path (blue filled triangles), \
+the previously available $\mathrm{p_{T}^{miss}}$-based paths (orange open circles), the previously available prompt di-$\\tau_\mathrm{h}$ paths (purple open squares), \
+the combination of the $\mathrm{p_{T}^{miss}}$-based and prompt di-$\\tau_\mathrm{h}$ paths (gray open triangles), and the combination of the $\mathrm{p_{T}^{miss}}$-based, \
+prompt di-$\\tau_\mathrm{h}$, and displaced di-$\\tau_\mathrm{h}$ paths (red filled circles), using 2022 data-taking conditions. \
+The efficiency is evaluated with respect to generator-level quantities. \
+Efficiency of the highest $\mathrm{p_{T}}$ $\\tau$ lepton in the event as a function of the $d_{0}$ (left). \
+Efficiency as a function of $\mathrm{p_{T}^{miss}}$ (right). \
+A selection on the visible component of the generator-level $\\tau$ lepton $\mathrm{p_{T}} >$ 30 GeV and its pseudorapidity $|{\\eta}| < 2.1$ is applied. \
+The lower panels show the ratio (improvement in \%) of the trigger efficiency given by the combination of the displaced di-$\\tau_\mathrm{h}$ trigger path with the $\mathrm{p_{T}^{miss}}$-based \
+and prompt di-$\\tau_\mathrm{h}$ paths to that of the combination of the previously available $\mathrm{p_{T}^{miss}}$-based and prompt di-$\\tau_\mathrm{h}$ paths."
+    table.location = f"Data from Fig. 13 ({position})"
+    
+    if var == 'd0':
+        table.add_image("data_Sara/efficiency_tau_dxy_ditau_perEvt_GENpT30_Tau32_M100ctau100_officialsummer22EE.pdf")
+    else:
+        table.add_image("data_Sara/efficiency_met_ditau_perEvt_GENpT30_Tau32_M100ctau100_officialsummer22EE.pdf")
+    
+    reader = RootFileReader("data_Sara/Figs_gen_met.root")
+    g_ditau = reader.read_teff("eff_ditau;1")
+    g_ptmiss = reader.read_teff("eff_ptmiss;1")
+    g_prompt = reader.read_teff("eff_prompttau;1")
+    g_old_OR = reader.read_teff("eff_old_OR;1")
+    g_new_OR = reader.read_teff("eff_new_OR;1")
+
+    xvar = Variable("Gen.-level $\mathrm{p_{T}^{miss}}$", is_independent=True, is_binned=False, units="GeV") ### to be changed
+    if var == 'd0':
+        xvar = Variable("Gen.-level $\\tau$ $\mathrm{d_0}$", is_independent=True, is_binned=False, units="cm") ### to be changed
+    xvar.values = g_ditau["x"]
+
+    table.add_variable(xvar)
+    table.add_variable(makeVariable(plot = g_ditau, label = "displaced di-$\\tau_{h}$ paths", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+    table.add_variable(makeVariable(plot = g_ptmiss, label = "$\mathrm{p_{T}^{miss}}$ paths", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+    table.add_variable(makeVariable(plot = g_prompt, label = "prompt di-$\\tau_{h}$ paths", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+    table.add_variable(makeVariable(plot = g_old_OR, label = "$\mathrm{p_{T}^{miss}}$ OR prompt di-$\\tau_{h}$ paths", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+    table.add_variable(makeVariable(plot = g_new_OR, label = "displaced di-$\\tau_{h}$ OR $\mathrm{p_{T}^{miss}}$ OR prompt di-$\\tau_{h}$ paths", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+
+    return table
+
+
+def makeDisplacedTauAccTable():
+
+    table = Table("Displaced tau trigger acceptance vs decay vertex radial positon")
+    table.description = "The L1T+HLT acceptance of the displaced $\\tau_\mathrm{h}$ trigger, for simulated \
+$\mathrm{p}\mathrm{p} \\to \\tilde{\\tau}\\tilde{\\tau},(\\tilde{\\tau} \\to \\tau\\tilde{\\chi}^{0}_{1})$ events,\
+where each $\\tau$ decays hadronically and the $\\tilde{\\tau}$ has a simulated $c\\tau$ of 10 cm. \
+The acceptance is shown for the displaced di-$\\tau_\mathrm{h}$ trigger path for 2022 data-taking conditions and is \
+plotted with respect to the generator-level $\\tau$ lepton decay vertex radial position. \
+Selections on the visible component of the generator-level $\\tau$ lepton $\mathrm{p_{T}}$ ($\mathrm{p_{T}}(\\tau) > 30$ GeV), \
+its pseudorapidity ($|\\eta(\\tau)| <$ 2.1), and its decay vertex radial position ($R < $115 cm) are applied."
+    
+    table.location = f"Data from Fig. 70"
+    table.add_image("data_Sara/efficiency_tau_lxy_ditau_perEvt_GENpT30_Tau32_M100ctau100_officialsummer22EE_radiusWithin115.pdf")
+    
+    reader = RootFileReader("data_Sara/Fig70_tau_gen_lxy.root")
+    g_ditau = reader.read_teff("eff_ditau;1")
+
+    xvar = Variable("Gen.-level $\\tau$ decay vertex radial positon", is_independent=True, is_binned=False, units="cm")
+    xvar.values = g_ditau["x"]
+
+    table.add_variable(xvar)
+    table.add_variable(makeVariable(plot = g_ditau, label = "displaced di-$\\tau_{h}$ paths", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+
+    return table
+
 
 def main():
     # Check if ImageMagick is available for image processing
@@ -989,6 +1063,10 @@ def main():
         os.makedirs(output_dir)
     
     successful_figures = 0
+
+    # Figure 13
+    submission.add_table(makeDisplacedTauEffTable('MET'))
+    submission.add_table(makeDisplacedTauEffTable('d0'))
 
     # Figure 21
     submission.add_table(makeHcalTowerEffTable())
@@ -1071,6 +1149,9 @@ def main():
     submission.add_table(makeHLTMuResoTable("genpt"))
     submission.add_table(makeHLTMuResoTable("genlxy"))
 
+    # Figure 70
+    submission.add_table(makeDisplacedTauAccTable())
+    
     for table in submission.tables:
         table.keywords["cmenergies"] = [13000,13600]
     

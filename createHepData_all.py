@@ -1076,7 +1076,7 @@ def main():
     
     # Generate HEPData files
     try:
-        submission.create_files(output_dir)
+        submission.create_files(output_dir,remove_old=True)
         print(f"\nHEPData files created in '{output_dir}' directory")
     except Exception as e:
         print(f"Error creating HEPData files: {e}")
@@ -1090,7 +1090,7 @@ def main():
                     table.image_files = []
 
             try:
-                submission.create_files(output_dir)
+                submission.create_files(output_dir,remove_old=True)
                 print(f"\nHEPData files created in '{output_dir}' directory (without images)")
             except Exception as e2:
                 print(f"Failed to create submission even without images: {e2}")

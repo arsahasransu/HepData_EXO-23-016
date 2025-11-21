@@ -306,9 +306,9 @@ def makeDelayedDiPhotonHistTable(xvar):
         raise ValueError("Unexpected input to function makeDelayedDiPhotonHistTable()")
     
     table.location = "Data from Fig. 31 "+location
-    table.add_image(f"data_DelayedDiPhoton_SahasransuAR/delayed_dieg10_tdelay_ecal_w_d0_{xvar}.pdf")
+    table.add_image(f"data_DelayedDiPhoton_SahasransuAR/tdelay_ecal_w_d0_{xvar}.pdf")
 
-    reader = RootFileReader(f"data_DelayedDiPhoton_SahasransuAR/delayed_dieg10_tdelay_ecal_w_d0_{xvar}.root")
+    reader = RootFileReader(f"data_DelayedDiPhoton_SahasransuAR/tdelay_ecal_w_d0_{xvar}.root")
     dymc = reader.read_hist_1d(f"genmatched_ph_seedtime_{xvar}_rebinned;1")
     llp3cm = reader.read_hist_1d(f"genmatched_ph_seedtime_{xvar}_rebinned;2")
     llp30cm = reader.read_hist_1d(f"genmatched_ph_seedtime_{xvar}_rebinned;3")

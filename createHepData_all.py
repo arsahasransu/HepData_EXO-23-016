@@ -1128,6 +1128,62 @@ The rate vs PU behavior was nonlinear in 2022 and fixed in time for 2023 data ta
 
     return table
 
+#Figure 65 and 66
+def makeAcceptanceTables(mH, mX, coord):
+    tag = f"{mH}_{mX}"
+    if coord == "R":
+        fname = f"data_Neha/overlay_acceptance_{tag}_CTau-1000mm.root"
+        pdfbase = f"data_Neha/overlay_acceptance_{tag}_CTau-1000mm"
+        axis_label = "LLP decay R"
+        position_phrase = "LLP decay radial position"
+    else:
+        fname = f"data_Neha/overlay_acceptance_z_{tag}_CTau-1000mm.root"
+        pdfbase = f"data_Neha/overlay_acceptance_z_{tag}_CTau-1000mm"
+        axis_label = "LLP decay Z"
+        position_phrase = "LLP decay position along the beam line"
+        
+    reader = RootFileReader(fname)
+
+    curves = [
+        ("g_trk",  "Displaced-jet triggers using the tracker ($c\\tau = 0.1\\,\\mathrm{m}$)", "Tracker displaced-jet", "0.1 m"),
+        ("g_ecal", "Delayed-jet triggers using ECAL timing ($c\\tau = 1\\,\\mathrm{m}$)",      "ECAL delayed-jet",     "1 m"),
+        ("g_hcal", "Displaced-jet triggers using the HCAL ($c\\tau = 1\\,\\mathrm{m}$)",       "HCAL displaced-jet",   "1 m"),
+        ("g_dt",   "Muon Detector Showers with the DTs ($c\\tau = 1\\,\\mathrm{m}$)",          "DT MDS",               "1 m"),
+        ("g_csc",  "Muon Detector Showers with the CSCs ($c\\tau = 1\\,\\mathrm{m}$)",         "CSC MDS",              "1 m"),
+    ]
+
+    tables = []
+
+    for graph_name, label, short, ctau in curves:
+        g = reader.read_graph(graph_name)
+
+        if coord == "R":
+            title = f"{short} acceptance vs R (mH={mH}, mX={mX})"
+        else:
+            title = f"{short} acceptance vs Z (mH={mH}, mX={mX})"
+        table = Table(title)
+        if coord == "R":
+            table.location = "Data from Fig. 65"
+        else:
+            table.location = "Data from Fig. 66"
+        table.description = ("The L1T+HLT acceptances for various LLP triggers using different subdetectors, as functions of the " + position_phrase + f", for $H \\to X X \\to b\\bar{{b}}\\,b\\bar{{b}}$ events for 2023 conditions with $m_H={mH}\\,\\mathrm{{GeV}}$ and $m_X={mX}\\,\\mathrm{{GeV}}$. The $c\\tau$ is 0.1\\,m for the displaced-jet triggers using the tracker and 1\\,m for the other triggers. The acceptance is shown for the displaced-jet triggers using the tracker (cyan points), for the delayed-jet triggers using ECAL timing (red circles), for the displaced-jet triggers using the HCAL (blue squares), for the MDS triggers with the DTs (green triangles), and for the MDS triggers with the CSCs (pink points). The boundaries of the tracker, ECAL, HCAL, DTs, and CSCs are also shown.")
+        table.add_image(pdfbase + ".pdf")
+
+        x = Variable(axis_label, is_independent=True, is_binned=False, units="cm")
+        x.values = g["x"]
+        table.add_variable(x)
+
+        y = Variable(label, is_independent=False, is_binned=False)
+        y.values = g["y"]
+        u = Uncertainty("stat", is_symmetric=False)
+        u.values = g["dy"]
+        y.add_uncertainty(u)
+        y.add_qualifier("SQRT(S)", 13.6, "TeV")
+        y.add_qualifier("Final state", "$H \\to X X \\to b\\bar{b}\\,b\\bar{b}$")
+        table.add_variable(y)
+
+        tables.append(table)
+    return tables
 
 def main():
     # Check if ImageMagick is available for image processing
@@ -1245,6 +1301,16 @@ def main():
     submission.add_table(makeMuonNoBPTXRateVsNBunchesTable("2023"))
     submission.add_table(makeMuonNoBPTXRateVsNBunchesTable("2024"))
 
+    #Figure 65
+    mass_points = [(125,25), (350,80), (350,160), (1000,200)]
+    for mH, mX in mass_points:
+        for t in makeAcceptanceTables(mH, mX, "R"):
+            submission.add_table(t)
+    #Figure 66
+    for mH, mX in mass_points:
+        for t in makeAcceptanceTables(mH, mX, "Z"):
+            submission.add_table(t)
+        
     # Figure 69
     submission.add_table(makeHLTMuResoTable("genpt"))
     submission.add_table(makeHLTMuResoTable("genlxy"))

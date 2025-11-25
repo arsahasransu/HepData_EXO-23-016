@@ -29,6 +29,7 @@ import yaml
 import shutil
 import subprocess
 from hepdata_lib import RootFileReader, Submission, Variable, Uncertainty, Table
+from hepdata_lib.root_utils import get_hist_1d_points
 
 # Import the helper function from readTest.py
 sys.path.append('.')
@@ -1296,6 +1297,53 @@ def makeAcceptanceTables(mH, mX, coord):
         tables.append(table)
     return tables
 
+def makeTrackingEfficiencyTable(trigger_or_offline):
+    if trigger_or_offline == 'HLT':
+        table = Table("HLT Tracking efficiency vs simulated radial position")
+        table.add_image("data_Enrico/ttbar_Run3_HLT_efficiency_r_logx.pdf")
+        table.location = "Data from Fig. 2 (right)"
+        table.description = "Overall standard tracking efficiency at the HLT during Run~3, as a function of the simulated radial position of the track production vertex. In the figure, \\ttbar simulation for 2025 conditions and an average PU of 62 is used, and the tracks are required to have $\pt>0.9\GeV$ and $\\abs{\eta}<2.5$. The tracking efficiency is defined as the ratio of the simulated tracks (with the aforementioned selection requirements) geometrically matched to a reconstructed track, divided by the total simulated tracks passing the selections."
+
+        reader = RootFileReader("data_Enrico/ttbar_Run3_HLT_efficiency_r_logx.root")
+        h_trkeff = reader.read_hist_1d("effic_vs_vertpos;1")
+
+        xvar = Variable("Radial vertex position ", is_independent=True, is_binned=False, units="cm")
+        xvar.values = h_trkeff["x"]
+
+        table.add_variable(xvar)
+        table.add_variable(makeVariable(plot = h_trkeff, label = "HLT tracking efficiency", is_independent=False, is_binned=False, is_symmetric=True, units=""))
+
+        return table
+    elif trigger_or_offline == 'Offline':
+        table = Table("Offline Tracking efficiency vs simulated radial position")
+        table.add_image("data_Enrico/ttbar_Run3_efficiency_r_cum_logx.pdf")
+        table.location = "Data from Fig. 2 (left)"
+        table.description = "Offline standard tracking efficiency during Run~3 for different tracking iterations, as a function of simulated radial position of the track production vertex (left). In the figure, \\ttbar simulation for 2025 conditions and an average PU of 62 is used, and the tracks are required to have $\pt>0.9\GeV$ and $\\abs{\eta}<2.5$. The tracking efficiency is defined as the ratio of the simulated tracks (with the aforementioned selection requirements) geometrically matched to a reconstructed track, divided by the total simulated tracks passing the selections."
+
+        reader = RootFileReader("data_Enrico/ttbar_Run3_efficiency_r_cum_logx.root")
+        h_trkeff = reader.retrieve_object("effic_vs_vertpos;1")
+
+        total_eff = None
+        for h in h_trkeff.GetHists():
+            trk_eff_by_iter = get_hist_1d_points(h)
+            table.add_variable(makeVariable(plot = trk_eff_by_iter, label = f"{h.GetName()} iteration tracking efficiency", is_independent=False, is_binned=False, is_symmetric=True, units=""))
+            xvar_values = trk_eff_by_iter['x']
+            if total_eff is None:
+                total_eff = trk_eff_by_iter['y']
+            else:
+                total_eff = [total_eff[i] + trk_eff_by_iter['y'][i] for i in range(len(total_eff))]
+        total_y = Variable("Total offline tracking efficiency", is_independent=False, is_binned=False, units="")
+        total_y.values = total_eff
+        table.add_variable(total_y)
+
+
+        xvar = Variable("Radial vertex position ", is_independent=True, is_binned=False, units="cm")
+        xvar.values = xvar_values
+        table.add_variable(xvar)
+        return table
+    else:
+        raise ValueError("Must pass either HLT or Offline")
+
 def main():
     # Check if ImageMagick is available for image processing
     has_imagemagick = check_imagemagick_available()
@@ -1321,6 +1369,10 @@ def main():
         os.makedirs(output_dir)
     
     successful_figures = 0
+
+    # Figure 2
+    submission.add_table(makeTrackingEfficiencyTable("Offline"))
+    submission.add_table(makeTrackingEfficiencyTable("HLT"))
 
     # Figure 13
     submission.add_table(makeDisplacedTauEffTable('MET'))

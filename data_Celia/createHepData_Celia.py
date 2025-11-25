@@ -129,11 +129,11 @@ def makeScoutingMuonResolutionTable():
     table.location = "Data from Fig. 52"
     table.add_image("LLP-Paper_bothReco_ptres_graph_BE_2024.pdf")
 
-    reader_noVtxMu = RootFileReader("Scouting_ptres_noVtxMu.root")
+    reader_noVtxMu = RootFileReader("TGraph_ptres_noVtxMu_v2.root")
     graph_noVtxMu_B = reader_noVtxMu.read_graph("noVtxMu_B;1")
     graph_noVtxMu_E = reader_noVtxMu.read_graph("noVtxMu_E;1")
 
-    reader_vtxMu = RootFileReader("Scouting_ptres_vtxMu.root")
+    reader_vtxMu = RootFileReader("TGraph_ptres_vtxMu_v2.root")
     graph_vtxMu_B = reader_vtxMu.read_graph("vtxMu_B;1")
     graph_vtxMu_E = reader_vtxMu.read_graph("vtxMu_E;1")
 
@@ -168,7 +168,7 @@ def main():
     submission.add_table(makeScoutingMuonRecoEffVSLxyTable("2.5")) # Figure 51 left
     submission.add_table(makeScoutingMuonRecoEffVSLxyTable("14")) # Figure 51 right
     #
-    #submission.add_table(makeScoutingMuonResolutionTable()) # Figure 52 - preliminary deactivated because the input looks broken (solving it)
+    submission.add_table(makeScoutingMuonResolutionTable()) # Figure 52 - preliminary deactivated because the input looks broken (solving it)
 
     for table in submission.tables:
         table.keywords["cmenergies"] = [13600]

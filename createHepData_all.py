@@ -1162,7 +1162,7 @@ def makeDelayedJetEfficiencyTable():
     return table
 
 #Figure 28
-def makeDelayedHTTauTable(rootfile, final_state_label, final_state_tex):
+def makeDelayedHTTauTable(rootfile, final_state_label, final_state_tex, location):
     reader = RootFileReader(rootfile)
 
     h_incl_ht  = reader.read_hist_1d("Inclusiveht")
@@ -1172,7 +1172,7 @@ def makeDelayedHTTauTable(rootfile, final_state_label, final_state_tex):
 
     title = f"Delayed jet trigger efficiency vs HT, ({final_state_label} final state)"
     table = Table(title)
-    table.location = "Data from Figure 28"
+    table.location = "Data from Figure 28 " + location
     table.description = ("The L1T+HLT efficiency of the $H_T$-seeded delayed jet trigger, the $H_T$-seeded delayed trackless jet trigger, the tau-seeded delayed jet trigger, and the tau-seeded delayed trackless jet trigger, as functions of $H_T$, for a $H \\to X X \\to " + final_state_tex + "$ signal. The addition of the delayed-jet triggers results in a significant improvement in the efficiency of the signal in the intermediate $H_T$ range.")
     table.add_image(rootfile.replace(".root", ".pdf"))
 
@@ -1199,14 +1199,14 @@ def makeDelayedHTTauTable(rootfile, final_state_label, final_state_tex):
     return table
 
 #Figure 29
-def makeDelayedJetTimeTable(rootfile, table_title, hlt_text):
+def makeDelayedJetTimeTable(rootfile, table_title, hlt_text, location):
     reader = RootFileReader(rootfile)
 
     g2023 = reader.read_graph("2023")
     g2022 = reader.read_graph("2022")
 
     table = Table(table_title)
-    table.location = "Data from Figure 29"
+    table.location = "Data from Figure 29 " + location
     table.description = ("Data from Figure 28: The L1T+HLT efficiency of the delayed-jet triggers as a function of jet timing for 2022 and 2023 data-taking periods. A clear rise in efficiency is evident around the threshold values. The plots include events that pass the $E_T^{\\text{miss}} > 200\\,\\mathrm{GeV}$ trigger and have at least one barrel jet with $p_T > 50\\,\\mathrm{GeV}$, number of ECAL cells $> 8$, and ECAL energy $ > 25\\,\\mathrm{GeV}$. The $H_T$ is calculated using the scalar sum of jets with offline $p_T > 40 GeV$, and this is different from the $H_T$ calculation used at the HLT level, which can cause trigger inefficiencies. The maximum jet time accepted by the trigger is $12.5\\,\\mathrm{ns}$.")
     table.add_image(rootfile.replace(".root", ".pdf"))
 
@@ -1241,6 +1241,17 @@ def makeAcceptanceTables(mH, mX, coord):
         pdfbase = f"data_Neha/overlay_acceptance_z_{tag}_CTau-1000mm"
         axis_label = "LLP decay Z"
         position_phrase = "LLP decay position along the beam line"
+
+    if tag == "1000_200":
+        location = "(upper left)"
+    elif tag == "350_160":
+        location = "(lower left)"
+    elif tag == "350_80":
+        location = "(upper right)"
+    elif tag == "125_25":
+        location = "(lower right)"
+    else:
+        location = "null"
         
     reader = RootFileReader(fname)
 
@@ -1263,9 +1274,9 @@ def makeAcceptanceTables(mH, mX, coord):
             title = f"{short} acceptance vs Z (mH={mH}, mX={mX})"
         table = Table(title)
         if coord == "R":
-            table.location = "Data from Fig. 65"
+            table.location = "Data from Fig. 65 " + location
         else:
-            table.location = "Data from Fig. 66"
+            table.location = "Data from Fig. 66 " + location
         table.description = ("The L1T+HLT acceptances for various LLP triggers using different subdetectors, as functions of the " + position_phrase + f", for $H \\to X X \\to b\\bar{{b}}\\,b\\bar{{b}}$ events for 2023 conditions with $m_H={mH}\\,\\mathrm{{GeV}}$ and $m_X={mX}\\,\\mathrm{{GeV}}$. The $c\\tau$ is 0.1\\,m for the displaced-jet triggers using the tracker and 1\\,m for the other triggers. The acceptance is shown for the displaced-jet triggers using the tracker (cyan points), for the delayed-jet triggers using ECAL timing (red circles), for the displaced-jet triggers using the HCAL (blue squares), for the MDS triggers with the DTs (green triangles), and for the MDS triggers with the CSCs (pink points). The boundaries of the tracker, ECAL, HCAL, DTs, and CSCs are also shown.")
         table.add_image(pdfbase + ".pdf")
 
@@ -1336,12 +1347,12 @@ def main():
     submission.add_table(makeDelayedJetEfficiencyTable())
 
     # Figure 28
-    submission.add_table(makeDelayedHTTauTable("data_Neha/Signal_efficiency_HT430vsL1Tau_HtoXXto4b.root", "4b", "4b"))
-    submission.add_table(makeDelayedHTTauTable("data_Neha/Signal_efficiency_HT430vsL1Tau_HtoXXto4tau.root", "4tau", "4\\tau"))
+    submission.add_table(makeDelayedHTTauTable("data_Neha/Signal_efficiency_HT430vsL1Tau_HtoXXto4b.root", "4b", "4b", "(left)"))
+    submission.add_table(makeDelayedHTTauTable("data_Neha/Signal_efficiency_HT430vsL1Tau_HtoXXto4tau.root", "4tau", "4\\tau", "(right)"))
 
     # Figure 29
-    submission.add_table(makeDelayedJetTimeTable("data_Neha/HLT_HTg430_Delayedjet2nsthreshold_efficiency.root","$H_{T}$-seeded delayed jet trigger efficiency vs jet time"," HLT selection: $H_{T}> 430 GeV$, $\\geq 1$ jet with $p_{T} > 40 GeV$ and $t > 2 ns$."))
-    submission.add_table(makeDelayedJetTimeTable("data_Neha/HLT_L1Tau_Delayedjet3p5nsthreshold_efficiency.root","L1Tau-seeded delayed jet trigger efficiency vs jet time"," HLT selection: L1Tau, $\\geq 1$ jet with $p_{T} > 40 GeV$ and $t > 3.5 ns$."))
+    submission.add_table(makeDelayedJetTimeTable("data_Neha/HLT_HTg430_Delayedjet2nsthreshold_efficiency.root","$H_{T}$-seeded delayed jet trigger efficiency vs jet time"," HLT selection: $H_{T}> 430 GeV$, $\\geq 1$ jet with $p_{T} > 40 GeV$ and $t > 2 ns$.","(left)"))
+    submission.add_table(makeDelayedJetTimeTable("data_Neha/HLT_L1Tau_Delayedjet3p5nsthreshold_efficiency.root","L1Tau-seeded delayed jet trigger efficiency vs jet time"," HLT selection: L1Tau, $\\geq 1$ jet with $p_{T} > 40 GeV$ and $t > 3.5 ns$.","(right)"))
     
     # Figure 31
     submission.add_table(makeDelayedDiPhotonHistTable("eb"))

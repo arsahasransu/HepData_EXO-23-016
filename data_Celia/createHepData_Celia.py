@@ -158,7 +158,7 @@ def main():
 
     submission.read_abstract("abstract.txt")
     #
-    makeScoutingMuonDataEffVSPtTable() # Figure 48
+    submission.add_table(makeScoutingMuonDataEffVSPtTable()) # Figure 48
     #
     submission.add_table(makeScoutingMuonSigEffVSLxyTable()) # Figure 49
     #

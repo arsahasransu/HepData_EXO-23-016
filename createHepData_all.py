@@ -1129,6 +1129,110 @@ The rate vs PU behavior was nonlinear in 2022 and fixed in time for 2023 data ta
     return table
 
 
+# Figure 48
+def makeScoutingMuonDataEffVSPtTable():
+    table = Table("Scouting dimuon trigger eff vs pt in data")
+    table.description = "L1T+HLT efficiency of the dimuon scouting trigger as a function of the subleading muon $p_{T}$, for 2024 data. The efficiency of the L1T dimuon seeds (pink squares) and the HLT dimuon scouting trigger with the vertex-unconstrained reconstruction algorithm (blue triangles) is shown. The events in the denominator are required to have at least two vertex-unconstrained muons ($N_{\\mu(\\text{no-vtx})} > 2$) and additionally have $\\chi^2/N_{\\text{dof}} < 3$ and $\\Delta R > 0.1$."
+
+    table.location = "Data from Fig. 48"
+    table.add_image("data_Celia/LLP-Paper_DoubleMuonEfficiency_data_pt.pdf")
+    reader = RootFileReader("data_Celia/Scouting_DoubleMuonEfficiency_data_pt.root")
+    graph_L1 = reader.read_teff("efficiency_pt_L1;1")
+    graph_HLT = reader.read_teff("efficiency_pt_HLT;1")
+
+    subpT = Variable("sub $\mathrm{p_{T}}$", is_independent=True, is_binned=False, units="GeV")
+    subpT.values = graph_L1["x"]
+
+    ### add variables and add table to submission
+    table.add_variable(subpT)
+    table.add_variable(makeVariable(plot = graph_L1, label = "Dimuon Level-1 seeds", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+    table.add_variable(makeVariable(plot = graph_HLT, label = "Dimuon HLT scouting trigger", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+
+    return table
+
+
+# Figure 49
+def makeScoutingMuonSigEffVSLxyTable():
+    table = Table("Scouting dimuon trigger eff vs Lxy")
+    table.description = "L1T+HLT efficiency of the dimuon scouting trigger as a function of the generator-level $L_{xy}$, for HAHM signal events, for 2024 conditions. The efficiency is shown for $m_{Z_D} = 14$ GeV and $c\\tau = 100$ mm (pink squares) and $m_{Z_D} = 2.5$ GeV and $c\\tau = 100$ mm (blue triangles). The muons are required to have $p_{T} > 15$ GeV and $|\\eta| < 2.4$ at the generator level."
+
+    table.location = "Data from Fig. 49"
+    table.add_image("data_Celia/LLP-Paper_signalEfficiency_lxy.pdf")
+    reader = RootFileReader("data_Celia/Scouting_signalEfficiency_lxy.root")
+    graph_2p5 = reader.read_teff("efficiency_minlxy_DoubleMuonNoVtx_2p5_100mm;1")
+    graph_14 = reader.read_teff("efficiency_minlxy_DoubleMuonNoVtx_14_100mm;1")
+
+    lxy = Variable("gen $\mathrm{L_{xy}}$", is_independent=True, is_binned=False, units="cm")
+    lxy.values = graph_2p5["x"]
+
+    ### add variables and add table to submission
+    table.add_variable(lxy)
+    table.add_variable(makeVariable(plot = graph_2p5, label = "$m_{Z_D} = 2.5$ GeV, $c\\tau = 100$ mm", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+    table.add_variable(makeVariable(plot = graph_14, label = "$m_{Z_D} = 14$ GeV, $c\\tau = 100$ mm", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+
+    return table
+
+# Figure 50
+def makeScoutingMuonSigEffVSPtTable(mass):
+    table = Table("Scouting dimuon trigger eff vs sub $\mathrm{p_{T}}$ for m = " + mass)
+    table.description = "L1T+HLT efficiency of the dimuon scouting trigger as a function of the generator-level subleading muon $\mathrm{p_{T}}$, for HAHM signal events for 2024 conditions. The efficiency is shown for $m_{Z_D}$ masses of 2.5 and 14 GeV, and $c\\tau$ values of 1 (purple squares), 10 (blue triangles), and 100 mm (pink circles). The muons are required to have $|\eta|<2.4$ at the generator level."
+    
+    if mass=="2.5":
+        table.location = "Data from Fig. 50 left"
+        table.add_image("data_Celia/LLP-Paper_signalEfficiency_pt_mZD-2p5GeV.pdf")
+        reader = RootFileReader("data_Celia/Scouting_signalEfficiency_pt_mZD-2p5GeV.root")
+        graph_1mm = reader.read_teff("efficiency_minpt_DoubleMuonNoVtx_2p5_1mm;1")
+        graph_10mm = reader.read_teff("efficiency_minpt_DoubleMuonNoVtx_2p5_10mm;1")
+        graph_100mm = reader.read_teff("efficiency_minpt_DoubleMuonNoVtx_2p5_100mm;1")
+    if mass=="14":
+        table.location = "Data from Fig. 50 right"
+        table.add_image("data_Celia/LLP-Paper_signalEfficiency_pt_mZD-14GeV.pdf")
+        reader = RootFileReader("data_Celia/Scouting_signalEfficiency_pt_mZD-14GeV.root")
+        graph_1mm = reader.read_teff("efficiency_minpt_DoubleMuonNoVtx_14_1mm;1")
+        graph_10mm = reader.read_teff("efficiency_minpt_DoubleMuonNoVtx_14_10mm;1")
+        graph_100mm = reader.read_teff("efficiency_minpt_DoubleMuonNoVtx_14_100mm;1")
+
+    subpT = Variable("sub $\mathrm{p_{T}}$", is_independent=True, is_binned=False, units="GeV")
+    subpT.values = graph_1mm["x"]
+
+    ### add variables and add table to submission
+    table.add_variable(subpT)
+    table.add_variable(makeVariable(plot = graph_1mm, label = "$m_{Z_D} = %s$ GeV, $c\\tau = 1$ mm"%(mass), is_independent=False, is_binned=False, is_symmetric=False, units=""))
+    table.add_variable(makeVariable(plot = graph_10mm, label = "$m_{Z_D} = %s$ GeV, $c\\tau = 10$ mm"%(mass), is_independent=False, is_binned=False, is_symmetric=False, units=""))
+    table.add_variable(makeVariable(plot = graph_100mm, label = "$m_{Z_D} = %s$ GeV, $c\\tau = 100$ mm"%(mass), is_independent=False, is_binned=False, is_symmetric=False, units=""))
+
+    return table
+
+# Figure 51
+def makeScoutingMuonRecoEffVSLxyTable(mass):
+    table = Table("Scouting reconstruction eff vs Lxy for m = " + mass)
+    table.description = "Scouting muon reconstruction efficiency of the vertex-constrained (pink circles) and vertex-unconstrained (blue triangles) algorithms as a function of the generator-level $L_{xy}$, for HAHM signal events for 2024 conditions. This efficiency is representative of the reconstruction efficiency of the L2 and L3 HLT muon reconstruction employed in scouting data. The efficiency is shown for $m_{Z_D} = 2.5$ GeV and $c\\tau = 100$ mm and $m_{Z_D} = 14$ GeV and $c\\tau = 100$ mm. The muons are required to have $p_{T} > 15$ GeV and $|\\eta| < 2.4$ at the generator level."
+    
+    if mass=="2.5":
+        table.location = "Data from Fig. 51 left"
+        table.add_image("data_Celia/LLP-Paper_signalEfficiency_recolxy_2p5GeV_100mm.pdf")
+        reader = RootFileReader("data_Celia/Scouting_signalEfficiency_lxy_2p5GeV_100mm.root")
+        graph_vtx = reader.read_teff("efficiency_lxy_vtx_2p5_100mm;1")
+        graph_novtx = reader.read_teff("efficiency_lxy_novtx_2p5_100mm;1")
+    if mass=="14":
+        table.location = "Data from Fig. 51 right"
+        table.add_image("data_Celia/LLP-Paper_signalEfficiency_recolxy_14GeV_100mm.pdf")
+        reader = RootFileReader("data_Celia/Scouting_signalEfficiency_lxy_14GeV_100mm.root")
+        graph_vtx = reader.read_teff("efficiency_lxy_vtx_14_100mm;1")
+        graph_novtx = reader.read_teff("efficiency_lxy_novtx_14_100mm;1")
+
+    lxy = Variable("gen $\mathrm{L_{xy}}$", is_independent=True, is_binned=False, units="cm")
+    lxy.values = graph_vtx["x"]
+
+    ### add variables and add table to submission
+    table.add_variable(lxy)
+    table.add_variable(makeVariable(plot = graph_vtx, label = "Vertex-constrained reconstruction", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+    table.add_variable(makeVariable(plot = graph_novtx, label = "Vertex-unconstrained reconstruction", is_independent=False, is_binned=False, is_symmetric=False, units=""))
+
+    return table
+
+
+
 def main():
     # Check if ImageMagick is available for image processing
     has_imagemagick = check_imagemagick_available()
@@ -1236,6 +1340,21 @@ def main():
     #Figure 46
     submission.add_table(makeDoubleDispL3MuonDataMCEffTable("min($\mathrm{d_{0}}$)"))
     submission.add_table(makeDoubleDispL3MuonDataMCEffTable("min($\mathrm{p_{T}}$)"))
+
+    #Figure 48
+    submission.add_table(makeScoutingMuonDataEffVSPtTable())
+
+    #Figure 49
+    submission.add_table(makeScoutingMuonSigEffVSLxyTable())
+    
+    #Figure 50
+    submission.add_table(makeScoutingMuonSigEffVSPtTable("2.5")) # left
+    submission.add_table(makeScoutingMuonSigEffVSPtTable("14")) # right
+    
+    #Figure 51
+    submission.add_table(makeScoutingMuonRecoEffVSLxyTable("2.5")) # left
+    submission.add_table(makeScoutingMuonRecoEffVSLxyTable("14")) # right
+
 
     #Figure 58
     submission.add_table(makeMuonNoBPTXRateVsNBunchesTable("2016"))

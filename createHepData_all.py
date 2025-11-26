@@ -1445,6 +1445,33 @@ def makeScoutingMuonRecoEffVSLxyTable(mass):
 
     return table
 
+# Figure 52
+def makeScoutingMuonResolutionTable():
+    table = Table("Scouting resolution vs pt")
+    table.description = "The $p_{T}$ resolution of scouting muons with respect to offline muons, as a function of the scouting muon $p_{T}$, for 2024 data events. The root mean square (RMS) of the difference of the scouting muon $p_{T}$ and the offline muon $p_{T}$, divided by the offline muon $p_{T}$, is plotted. The dimuon $\\Delta R$ is required to be greater than 0.2, and the scouting muon $p_{T}$ is required to be greater than 3 GeV. The resolution is shown for muons in the barrel (blue filled points) and the endcaps (purple filled triangles) that are reconstructed with both the vertex-unconstrained reconstruction algorithm, as well as for muons in the barrel (red filled squares) and the endcaps (orange unfilled squares) that are reconstructed with the vertex-constrained reconstruction algorithm. A special monitoring data set is used that collects events triggered by a mixture of HLT paths (both scouting and standard triggers) with a very high prescale, in which all information about the muon objects is stored from the offline and scouting reconstruction."
+
+    table.location = "Data from Fig. 52"
+    table.add_image("data_Celia/LLP-Paper_bothReco_ptres_graph_BE_2024.pdf")
+
+    reader_noVtxMu = RootFileReader("data_Celia/TGraph_ptres_noVtxMu_v2.root")
+    graph_noVtxMu_B = reader_noVtxMu.read_graph("noVtxMu_B;1")
+    graph_noVtxMu_E = reader_noVtxMu.read_graph("noVtxMu_E;1")
+
+    reader_vtxMu = RootFileReader("data_Celia/TGraph_ptres_vtxMu_v2.root")
+    graph_vtxMu_B = reader_vtxMu.read_graph("vtxMu_B;1")
+    graph_vtxMu_E = reader_vtxMu.read_graph("vtxMu_E;1")
+
+    pT = Variable("$\mathrm{p_{T}}$", is_independent=True, is_binned=False, units="GeV")
+    pT.values = graph_noVtxMu_B["x"]
+
+    ### add variables and add table to submission
+    table.add_variable(pT)
+    table.add_variable(makeVariable(plot = graph_noVtxMu_B, label = "Barrel: vertex-unconstrained reconstruction", is_independent=False, is_binned=False, is_symmetric=True, units=""))
+    table.add_variable(makeVariable(plot = graph_noVtxMu_E, label = "Endcap: vertex-unconstrained reconstruction", is_independent=False, is_binned=False, is_symmetric=True, units=""))
+    table.add_variable(makeVariable(plot = graph_vtxMu_B, label = "Barrel: vertex-constrained reconstruction", is_independent=False, is_binned=False, is_symmetric=True, units=""))
+    table.add_variable(makeVariable(plot = graph_vtxMu_E, label = "Encap: vertex-constrained reconstruction", is_independent=False, is_binned=False, is_symmetric=True, units=""))
+
+    return table
 
 
 def main():
@@ -1583,6 +1610,9 @@ def main():
     #Figure 51
     submission.add_table(makeScoutingMuonRecoEffVSLxyTable("2.5")) # left
     submission.add_table(makeScoutingMuonRecoEffVSLxyTable("14")) # right
+
+    #Figure 52
+    submission.add_table(makeScoutingMuonResolutionTable())
 
 
     #Figure 58
